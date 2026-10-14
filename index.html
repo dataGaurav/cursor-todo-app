@@ -255,7 +255,7 @@
 
       function setActiveTipButton(percent) {
         tipButtons.forEach((btn) => {
-          const isActive = Number(btn.dataset.tip) === percent;
+          const isActive = percent !== null && Number(btn.dataset.tip) === percent;
           btn.classList.toggle("active", isActive);
           btn.setAttribute("aria-pressed", String(isActive));
         });
@@ -265,7 +265,7 @@
         if (customTipInput.value === "") {
           setActiveTipButton(selectedTip);
         } else {
-          setActiveTipButton(NaN);
+          setActiveTipButton(null);
         }
       }
 
