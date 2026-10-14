@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tip Calculator</title>
+    <style>
+      :root {
+        --bg: #0f172a;
+        --card: #1e293b;
+        --muted: #94a3b8;
+        --text: #f8fafc;
+        --accent: #34d399;
+        --accent-dark: #059669;
+        --input: #0b1220;
+        --border: #334155;
+        --error: #f87171;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Segoe UI", system-ui, sans-serif;
+        background: radial-gradient(circle at top, #1e3a5f, var(--bg) 55%);
+        color: var(--text);
+        display: grid;
+        place-items: center;
+        padding: 1.5rem;
+      }
+
+      .card {
+        width: min(420px, 100%);
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 1.75rem;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+      }
+
+      h1 {
+        margin: 0 0 0.35rem;
+        font-size: 1.6rem;
+      }
+
+      .subtitle {
+        margin: 0 0 1.5rem;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 0.4rem;
+      }
+
+      .field {
+        margin-bottom: 1.15rem;
+      }
+
+      input[type="number"] {
+        width: 100%;
+        background: var(--input);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 0.7rem 0.85rem;
+        font-size: 1rem;
+      }
+
+      input[type="number"]:focus {
+        outline: 2px solid var(--accent);
+        border-color: transparent;
+      }
+
+      .tips {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.5rem;
+      }
+
+      .tips button {
+        background: var(--input);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 0.55rem 0;
+        cursor: pointer;
+        font-weight: 600;
+      }
+
+      .tips button:hover {
+        border-color: var(--accent);
+      }
+
+      .tips button.active {
+        background: var(--accent-dark);
+        border-color: var(--accent);
+      }
+
+      .results {
+        background: var(--input);
+        border-radius: 14px;
+        padding: 1rem 1.1rem;
+        margin-top: 0.4rem;
+      }
+
+      .row {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.35rem 0;
+      }
+
+      .row strong {
+        color: var(--accent);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .row.total {
+        border-top: 1px solid var(--border);
+        margin-top: 0.4rem;
+        padding-top: 0.7rem;
+        font-size: 1.05rem;
+      }
+
+      .error {
+        min-height: 1.2rem;
+        color: var(--error);
+        font-size: 0.85rem;
+        margin: 0 0 0.6rem;
+      }
+
+      .split-note {
+        min-height: 1.1rem;
+        margin: 0.35rem 0 0;
+        color: var(--muted);
+        font-size: 0.8rem;
+      }
+
+      .reset {
+        margin-top: 1rem;
+        width: 100%;
+        background: transparent;
+        color: var(--muted);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 0.65rem;
+        cursor: pointer;
+      }
+
+      .reset:hover {
+        color: var(--text);
+        border-color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <h1>Tip Calculator</h1>
+      <p class="subtitle">Enter the bill, choose a tip, and split it evenly.</p>
+
+      <form id="tip-form" novalidate>
+        <div class="field">
+          <label for="bill">Bill amount</label>
+          <input
+            id="bill"
+            name="bill"
+            type="number"
+            min="0"
+            step="0.01"
+            placeholder="0.00"
+            inputmode="decimal"
+          />
+        </div>
+
+        <div class="field">
+          <label>Tip percentage</label>
+          <div class="tips" role="group" aria-label="Tip percentage">
+            <button type="button" class="tip-btn active" data-tip="15" aria-pressed="true">15%</button>
+            <button type="button" class="tip-btn" data-tip="18" aria-pressed="false">18%</button>
+            <button type="button" class="tip-btn" data-tip="20" aria-pressed="false">20%</button>
+            <button type="button" class="tip-btn" data-tip="25" aria-pressed="false">25%</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="custom-tip">Custom tip %</label>
+          <input
+            id="custom-tip"
+            name="custom-tip"
+            type="number"
+            min="0"
+            step="0.1"
+            placeholder="e.g. 22"
+            inputmode="decimal"
+          />
+        </div>
+
+        <div class="field">
+          <label for="people">Number of people</label>
+          <input id="people" name="people" type="number" min="1" step="1" value="1" />
+        </div>
+
+        <p class="error" id="error" role="status"></p>
+
+        <div class="results" aria-live="polite">
+          <div class="row">
+            <span>Tip</span>
+            <strong id="tip-amount">$0.00</strong>
+          </div>
+          <div class="row">
+            <span>Total</span>
+            <strong id="total">$0.00</strong>
+          </div>
+          <div class="row total">
+            <span>Each person</span>
+            <strong id="per-person">$0.00</strong>
+          </div>
+          <p class="split-note" id="split-note"></p>
+        </div>
+
+        <button type="reset" class="reset">Reset</button>
+      </form>
+    </main>
+
+    <script>
+      const money = new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+      });
+
+      const billInput = document.getElementById("bill");
+      const customTipInput = document.getElementById("custom-tip");
+      const peopleInput = document.getElementById("people");
+      const errorEl = document.getElementById("error");
+      const splitNoteEl = document.getElementById("split-note");
+      const tipButtons = document.querySelectorAll(".tip-btn");
+      const form = document.getElementById("tip-form");
+
+      let selectedTip = 15;
+
+      function toCents(value) {
+        return Math.round(Number(`${value}e2`));
+      }
+
+      function formatCents(cents) {
+        return money.format(cents / 100);
+      }
+
+      function setActiveTipButton(percent) {
+        tipButtons.forEach((btn) => {
+          const isActive = Number(btn.dataset.tip) === percent;
+          btn.classList.toggle("active", isActive);
+          btn.setAttribute("aria-pressed", String(isActive));
+        });
+      }
+
+      function syncTipSelection() {
+        if (customTipInput.value === "") {
+          setActiveTipButton(selectedTip);
+        } else {
+          setActiveTipButton(NaN);
+        }
+      }
+
+      function calculate() {
+        const billRaw = billInput.value.trim();
+        const customRaw = customTipInput.value.trim();
+        const peopleRaw = peopleInput.value.trim();
+
+        const bill = billRaw === "" ? 0 : Number(billRaw);
+        const customTip = Number(customRaw);
+        const people = Number(peopleRaw);
+        const tipPercent = customRaw === "" ? selectedTip : customTip;
+
+        if (peopleRaw === "" || !Number.isInteger(people) || people < 1) {
+          errorEl.textContent = "Split between at least 1 person.";
+          render(0, 0, 0, "");
+          return;
+        }
+
+        if (!Number.isFinite(bill) || bill < 0) {
+          errorEl.textContent = "Enter a bill of $0 or more.";
+          render(0, 0, 0, "");
+          return;
+        }
+
+        if (!Number.isFinite(tipPercent) || tipPercent < 0) {
+          errorEl.textContent = "Enter a tip of 0% or more.";
+          render(0, 0, 0, "");
+          return;
+        }
+
+        errorEl.textContent = "";
+
+        const billCents = toCents(bill);
+        const tipCents = Math.round((billCents * tipPercent) / 100);
+        const totalCents = billCents + tipCents;
+        const perPersonCents = Math.trunc(totalCents / people);
+        const extraPeople = totalCents % people;
+        const splitNote =
+          extraPeople === 0
+            ? ""
+            : `${extraPeople} of ${people} pay ${formatCents(perPersonCents + 1)} so the split matches the total.`;
+
+        render(tipCents, totalCents, perPersonCents, splitNote);
+      }
+
+      function render(tipCents, totalCents, perPersonCents, splitNote) {
+        document.getElementById("tip-amount").textContent = formatCents(tipCents);
+        document.getElementById("total").textContent = formatCents(totalCents);
+        document.getElementById("per-person").textContent = formatCents(perPersonCents);
+        splitNoteEl.textContent = splitNote;
+      }
+
+      tipButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          selectedTip = Number(btn.dataset.tip);
+          customTipInput.value = "";
+          setActiveTipButton(selectedTip);
+          calculate();
+        });
+      });
+
+      customTipInput.addEventListener("input", () => {
+        syncTipSelection();
+        calculate();
+      });
+
+      billInput.addEventListener("input", calculate);
+      peopleInput.addEventListener("input", calculate);
+
+      form.addEventListener("reset", () => {
+        selectedTip = 15;
+        setActiveTipButton(15);
+        errorEl.textContent = "";
+        splitNoteEl.textContent = "";
+        queueMicrotask(calculate);
+      });
+
+      calculate();
+    </script>
+  </body>
+</html>
